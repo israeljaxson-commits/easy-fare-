@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Easy Fare — Compare live flight fares</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sky-deep: #0F1B2D;
+    --sky-mid: #1B3A5C;
+    --dawn: #FF8A3D;
+    --teal: #2DD4BF;
+    --paper: #F5F7FA;
+    --ink: #12202E;
+    --muted: #62758A;
+    --line: #E2E8F0;
+    --radius: 10px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    color: var(--ink);
+    background: var(--paper);
+  }
+
+  .display {
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  .mono {
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  /* ---------- HERO ---------- */
+  .hero {
+    position: relative;
+    background: linear-gradient(180deg, var(--sky-deep) 0%, var(--sky-mid) 65%, #2E5C82 100%);
+    padding: 56px 24px 120px;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, rgba(255,255,255,0.55) 1px, transparent 1px);
+    background-size: 42px 42px;
+    opacity: 0.15;
+    pointer-events: none;
+  }
+
+  .horizon-line {
+    position: absolute;
+    left: 0; right: 0;
+    bottom: 96px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+  }
+
+  .brand {
+    max-width: 1100px;
+    margin: 0 auto 40px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .brand-mark {
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--dawn), #FFC97A);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+  }
+
+  .brand-name {
+    color: #fff;
+    font-weight: 600;
+    font-size: 18px;
+    letter-spacing: 0.2px;
+  }
+
+  .hero-copy {
+    max-width: 1100px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+  }
+
+  .eyebrow {
+    color: var(--teal);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 600;
+    margin: 0 0 14px;
+  }
+
+  .hero h1 {
+    color: #fff;
+    font-size: clamp(32px, 4.5vw, 52px);
+    line-height: 1.08;
+    margin: 0 0 14px;
+    max-width: 720px;
+  }
+
+  .hero p {
+    color: rgba(255,255,255,0.72);
+    font-size: 16px;
+    max-width: 520px;
+    margin: 0;
+  }
+
+  /* ---------- SEARCH CARD ---------- */
+  .search-card {
+    max-width: 1100px;
+    margin: 40px auto 0;
+    background: #fff;
+    border-radius: var(--radius);
+    box-shadow: 0 24px 60px rgba(9, 22, 40, 0.35);
+    padding: 22px;
+    position: relative;
+    z-index: 3;
+  }
+
+  .search-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1.2fr 1fr auto;
+    gap: 12px;
+    align-items: end;
+  }
+
+  @media (max-width: 800px) {
+    .search-grid { grid-template-columns: 1fr; }
+  }
+
+  .field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 6px;
+  }
+
+  .field input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid var(--line);
+    border-radius: 8px;
+    font-size: 15px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--ink);
+    transition: border-color 0.15s ease;
+  }
+
+  .field input:focus {
+    outline: none;
+    border-color: var(--sky-mid);
+  }
+
+  .field input::placeholder {
+    color: #B7C2CE;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .swap-wrap { position: relative; }
+  .swap-btn {
+    position: absolute;
+    right: -6px;
+    top: -34px;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    border: 1.5px solid var(--line);
+    background: #fff;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .search-btn {
+    background: linear-gradient(135deg, var(--dawn), #FF6B35);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 13px 26px;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: 'Space Grotesk', sans-serif;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+    box-shadow: 0 8px 20px rgba(255, 107, 53, 0.35);
+  }
+
+  .search-btn:hover { transform: translateY(-1px); }
+  .search-btn:active { transform: translateY(0); }
+  .search-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* ---------- RESULTS ---------- */
+  .results-section {
+    max-width: 1100px;
+    margin: 48px auto 80px;
+    padding: 0 24px;
+  }
+
+  .results-layout {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  @media (max-width: 800px) {
+    .results-layout { grid-template-columns: 1fr; }
+  }
+
+  .filters {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 18px;
+    position: sticky;
+    top: 20px;
+  }
+
+  .filters h3 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin: 0 0 14px;
+  }
+
+  .filter-group {
+    margin-bottom: 20px;
+  }
+
+  .filter-group:last-child { margin-bottom: 0; }
+
+  .filter-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--ink);
+    margin-bottom: 8px;
+    cursor: pointer;
+  }
+
+  .filter-group input[type="checkbox"],
+  .filter-group input[type="radio"] {
+    accent-color: var(--dawn);
+    cursor: pointer;
+  }
+
+  .price-range-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .filter-group input[type="range"] {
+    width: 100%;
+    accent-color: var(--dawn);
+  }
+
+  .clear-filters {
+    background: none;
+    border: none;
+    color: var(--sky-mid);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    margin-top: 4px;
+  }
+
+  .results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .results-title {
+    font-size: 20px;
+    font-weight: 600;
+  }
+
+  .results-meta {
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .board {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .board-head {
+    display: grid;
+    grid-template-columns: 1.4fr 2fr 1fr 0.8fr auto;
+    padding: 12px 20px;
+    background: var(--sky-deep);
+    color: rgba(255,255,255,0.6);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+  }
+
+  @media (max-width: 720px) {
+    .board-head { display: none; }
+  }
+
+  .offer-row {
+    display: grid;
+    grid-template-columns: 1.4fr 2fr 1fr 0.8fr auto;
+    align-items: center;
+    padding: 18px 20px;
+    border-top: 1px solid var(--line);
+    gap: 12px;
+  }
+
+  .offer-row:first-child { border-top: none; }
+
+  @media (max-width: 720px) {
+    .offer-row {
+      grid-template-columns: 1fr;
+      gap: 6px;
+    }
+  }
+
+  .airline-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+  }
+
+  .airline-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--teal);
+    flex-shrink: 0;
+  }
+
+  .route-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px;
+  }
+
+  .route-line {
+    flex: 1;
+    height: 1px;
+    background: repeating-linear-gradient(90deg, var(--line) 0 4px, transparent 4px 8px);
+    position: relative;
+    min-width: 40px;
+  }
+
+  .route-line::after {
+    content: "✈";
+    position: absolute;
+    left: 50%;
+    top: -8px;
+    transform: translateX(-50%);
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .stops-cell {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .stops-cell.direct { color: var(--teal); font-weight: 600; }
+
+  .price-cell {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .price-currency {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 500;
+    margin-left: 3px;
+  }
+
+  .book-btn {
+    background: var(--sky-deep);
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    padding: 9px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif;
+    white-space: nowrap;
+  }
+
+  .book-btn:hover { background: var(--sky-mid); }
+
+  /* ---------- STATES ---------- */
+  .state-panel {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+
+  .state-panel.error { color: #B3452C; }
+
+  .spinner {
+    width: 30px; height: 30px;
+    border: 3px solid var(--line);
+    border-top-color: var(--dawn);
+    border-radius: 50%;
+    margin: 0 auto 16px;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .empty-illustration {
+    font-size: 34px;
+    margin-bottom: 10px;
+  }
+</style>
+</head>
+<body>
+
+  <div class="hero">
+    <div class="horizon-line"></div>
+    <div class="brand">
+      <div class="brand-mark">✈</div>
+      <div class="brand-name">Easy Fare</div>
+    </div>
+    <div class="hero-copy">
+      <p class="eyebrow">Live fares, side by side</p>
+      <h1 class="display">Find the cheapest way to your next departure.</h1>
+      <p>Search real airline fares in one place — sorted by price, so the best deal is always first.</p>
+    </div>
+
+    <form class="search-card" id="search-form">
+      <div class="search-grid">
+        <div class="field swap-wrap">
+          <label for="origin">From</label>
+          <input type="text" id="origin" placeholder="JFK" maxlength="3" required autocomplete="off" />
+        </div>
+        <div class="field">
+          <label for="destination">To</label>
+          <input type="text" id="destination" placeholder="LHR" maxlength="3" required autocomplete="off" />
+        </div>
+        <div class="field">
+          <label for="date">Departure</label>
+          <input type="date" id="date" required />
+        </div>
+        <button type="submit" class="search-btn" id="search-btn">Search fares</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="results-section" id="results-section" style="display:none;">
+    <div class="results-header">
+      <div class="results-title" id="results-title">Results</div>
+      <div class="results-meta" id="results-meta"></div>
+    </div>
+    <div class="results-layout">
+      <div class="filters" id="filters" style="display:none;">
+        <h3>Stops</h3>
+        <div class="filter-group" id="stops-filter-group">
+          <label><input type="checkbox" value="0" class="stops-checkbox" checked> Direct</label>
+          <label><input type="checkbox" value="1" class="stops-checkbox" checked> 1 stop</label>
+          <label><input type="checkbox" value="2+" class="stops-checkbox" checked> 2+ stops</label>
+        </div>
+
+        <h3>Airlines</h3>
+        <div class="filter-group" id="airline-filter-group">
+          <!-- populated by JS -->
+        </div>
+
+        <h3>Max price</h3>
+        <div class="filter-group">
+          <div class="price-range-value" id="price-range-value">Any</div>
+          <input type="range" id="price-range" min="0" max="0" value="0" />
+        </div>
+
+        <button type="button" class="clear-filters" id="clear-filters">Reset filters</button>
+      </div>
+
+      <div class="board" id="board">
+        <div class="board-head">
+          <div>Airline</div>
+          <div>Route</div>
+          <div>Stops</div>
+          <div>Price</div>
+          <div></div>
+        </div>
+        <div id="board-body"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('search-form');
+    const searchBtn = document.getElementById('search-btn');
+    const resultsSection = document.getElementById('results-section');
+    const boardBody = document.getElementById('board-body');
+    const resultsTitle = document.getElementById('results-title');
+    const resultsMeta = document.getElementById('results-meta');
+    const filtersPanel = document.getElementById('filters');
+    const airlineFilterGroup = document.getElementById('airline-filter-group');
+    const stopsFilterGroup = document.getElementById('stops-filter-group');
+    const priceRange = document.getElementById('price-range');
+    const priceRangeValue = document.getElementById('price-range-value');
+    const clearFiltersBtn = document.getElementById('clear-filters');
+
+    let allOffers = []; // full unfiltered set from the last search
+    let currentCurrency = '';
+
+    // default date: 30 days from now
+    const defaultDate = new Date();
+    defaultDate.setDate(defaultDate.getDate() + 30);
+    document.getElementById('date').value = defaultDate.toISOString().split('T')[0];
+
+    function formatTime(iso) {
+      if (!iso) return '--:--';
+      const d = new Date(iso);
+      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    // Placeholder deep-link builder. Swap this out for a real affiliate link
+    // (e.g. TravelPayouts/Kiwi) or Duffel's own checkout link once you have one.
+    function buildBookingLink(offer) {
+      const params = new URLSearchParams({
+        origin: offer.origin,
+        destination: offer.destination,
+        departure: offer.departureTime || '',
+        airline: offer.airline,
+      });
+      return `#book?${params.toString()}`;
+    }
+
+    function stopsBucket(stops) {
+      if (stops === 0) return '0';
+      if (stops === 1) return '1';
+      return '2+';
+    }
+
+    function populateFilters(offers) {
+      // Airlines: build checkboxes for each unique airline present in this result set
+      const airlines = [...new Set(offers.map(o => o.airline))].sort();
+      airlineFilterGroup.innerHTML = airlines.map(name => `
+        <label>
+          <input type="checkbox" value="${name}" class="airline-checkbox" checked>
+          ${name}
+        </label>
+      `).join('');
+
+      // Price range: set slider bounds to the min/max of this result set
+      const prices = offers.map(o => parseFloat(o.price)).filter(p => !isNaN(p));
+      const maxPrice = prices.length ? Math.ceil(Math.max(...prices)) : 0;
+      priceRange.min = 0;
+      priceRange.max = maxPrice;
+      priceRange.value = maxPrice;
+      priceRangeValue.textContent = maxPrice ? `Up to ${maxPrice} ${currentCurrency}` : 'Any';
+
+      filtersPanel.style.display = offers.length ? 'block' : 'none';
+    }
+
+    function getActiveFilters() {
+      const activeStops = [...document.querySelectorAll('.stops-checkbox:checked')].map(cb => cb.value);
+      const activeAirlines = [...document.querySelectorAll('.airline-checkbox:checked')].map(cb => cb.value);
+      const maxPrice = parseFloat(priceRange.value);
+      return { activeStops, activeAirlines, maxPrice };
+    }
+
+    function applyFilters() {
+      const { activeStops, activeAirlines, maxPrice } = getActiveFilters();
+      const filtered = allOffers.filter(o => {
+        const bucket = stopsBucket(o.stops);
+        const stopsOk = activeStops.includes(bucket);
+        const airlineOk = activeAirlines.includes(o.airline);
+        const priceOk = parseFloat(o.price) <= maxPrice;
+        return stopsOk && airlineOk && priceOk;
+      });
+      renderOffers(filtered);
+      resultsMeta.textContent = `${filtered.length} of ${allOffers.length} fares shown`;
+    }
+
+    function renderOffers(offers) {
+      boardBody.innerHTML = '';
+
+      if (offers.length === 0) {
+        boardBody.innerHTML = `
+          <div class="state-panel">
+            <div class="empty-illustration">🔍</div>
+            No fares match these filters. Try widening your price range or stops.
+          </div>`;
+        return;
+      }
+
+      offers.forEach(offer => {
+        const row = document.createElement('div');
+        row.className = 'offer-row';
+        const stopsLabel = offer.stops === 0 ? 'Direct' : `${offer.stops} stop${offer.stops > 1 ? 's' : ''}`;
+        row.innerHTML = `
+          <div class="airline-cell"><span class="airline-dot"></span>${offer.airline}</div>
+          <div class="route-cell">
+            <span>${formatTime(offer.departureTime)} ${offer.origin}</span>
+            <span class="route-line"></span>
+            <span>${offer.destination} ${formatTime(offer.arrivalTime)}</span>
+          </div>
+          <div class="stops-cell ${offer.stops === 0 ? 'direct' : ''}">${stopsLabel}</div>
+          <div class="price-cell">${offer.price}<span class="price-currency">${offer.currency}</span></div>
+          <a class="book-btn" href="${buildBookingLink(offer)}" target="_blank" rel="noopener">Select</a>
+        `;
+        boardBody.appendChild(row);
+      });
+    }
+
+    // Re-apply filters whenever any filter control changes
+    document.addEventListener('change', (e) => {
+      if (e.target.matches('.stops-checkbox, .airline-checkbox')) applyFilters();
+    });
+
+    priceRange.addEventListener('input', () => {
+      priceRangeValue.textContent = `Up to ${priceRange.value} ${currentCurrency}`;
+      applyFilters();
+    });
+
+    clearFiltersBtn.addEventListener('click', () => {
+      document.querySelectorAll('.stops-checkbox, .airline-checkbox').forEach(cb => cb.checked = true);
+      priceRange.value = priceRange.max;
+      priceRangeValue.textContent = `Up to ${priceRange.max} ${currentCurrency}`;
+      applyFilters();
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const origin = document.getElementById('origin').value.trim().toUpperCase();
+      const destination = document.getElementById('destination').value.trim().toUpperCase();
+      const date = document.getElementById('date').value;
+
+      resultsSection.style.display = 'block';
+      resultsTitle.textContent = `${origin} → ${destination}`;
+      resultsMeta.textContent = date;
+      filtersPanel.style.display = 'none';
+      searchBtn.disabled = true;
+      searchBtn.textContent = 'Searching...';
+
+      boardBody.innerHTML = `
+        <div class="state-panel">
+          <div class="spinner"></div>
+          Checking live fares across airlines...
+        </div>`;
+
+      try {
+        const res = await fetch(`/api/search?origin=${origin}&destination=${destination}&date=${date}`);
+        const data = await res.json();
+
+        if (!res.ok) {
+          boardBody.innerHTML = `<div class="state-panel error">${data.error || 'Something went wrong. Please try again.'}</div>`;
+        } else {
+          allOffers = data.offers;
+          currentCurrency = allOffers[0]?.currency || '';
+          resultsMeta.textContent = `${date} · ${data.offers.length} fare${data.offers.length !== 1 ? 's' : ''} found${data.cached ? ' · cached' : ''}`;
+          populateFilters(allOffers);
+          renderOffers(allOffers);
+        }
+      } catch (err) {
+        boardBody.innerHTML = `<div class="state-panel error">Could not reach the server. Is it running?</div>`;
+      } finally {
+        searchBtn.disabled = false;
+        searchBtn.textContent = 'Search fares';
+      }
+    });
+  </script>
+</body>
+</html>

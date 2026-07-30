@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: easy-fare
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: DUFFEL_TOKEN
+        sync: false
